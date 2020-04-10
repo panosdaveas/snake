@@ -6,8 +6,8 @@
 #include <windows.h>
 #include <dos.h>
 
-#define width 20
-#define height 10
+#define width 40
+#define height 20
 #define initial_speed 400
 #define default_score 100
 
@@ -68,6 +68,8 @@ int is_obstacle(int x, int y){
 	}
 	return 0;
 }
+
+
 
 int is_border(int x, int y){
     return (x == 0 || y== 0 || x == width-1 || y == height-1);
@@ -384,15 +386,15 @@ int score(snake snake){
     else{
     	score += default_score;
     }
-    score = snake.booster*boost;
-    snake.score = score;
-    return snake.score;
+    score += snake.booster*boost;
+    //snake.score +=score;
+    return score;
 }
 
 snake eat(snake snake){
      if (snake.head.x==snake.food.x && snake.head.y==snake.food.y){
         snake.length++;
-        snake.score = score(snake); // correct is +=
+        snake.score += score(snake); // correct is +=
         snake.speed_counter ++;
         if(snake.speed_counter % 4 == 0){
         	snake.level++;
@@ -442,19 +444,19 @@ snake update_snake(snake snake){
 }
 
 char keyboard(){
-    char key;    
-    key=getch();          
-    return key;    
+    char key;
+	key=getche();
+    return key;
 }
 
 char keyboard_translate(char key){
-    if ((key == 'a') || (key == 'A')){
+    if ((key == 'a') || (key == 'A') /*|| (key== 75)*/){
         key = 'l';
-    }else if((key == 'd') || (key == 'D')){
+    }else if((key == 'd') || (key == 'D') /*|| (key==77)*/){
         key = 'r';
-    }else if((key == 's') || (key == 'S')){
+    }else if((key == 's') || (key == 'S') /*|| (key==80)*/){
         key ='d';
-    }else if((key == 'w') || (key == 'W')){
+    }else if((key == 'w') || (key == 'W') /*|| (key==72)*/){
         key = 'u';
     }    
     return key;
@@ -470,7 +472,7 @@ int game_over(snake snake){
                 if (is_border(x,y)){
                   printf("x");
                 }
-                else if(y==(height/2)-1 && x==(width/2 -5) ){    
+                else if(y==(height/2)-1 && x==(width/2 -5) ){
                      int i=x;
                      int j=0;                   
                      char over[]="Game Over!\0";
@@ -495,7 +497,9 @@ int game_over(snake snake){
 
 int play_again(){
     delay(initial_speed);
-    printf("\nPlay again?(y/n):");
+    printf("\n");
+    printf("%*c",width/2 -9,' ');
+    printf("Play again?(y/n):");
     char x = '\0';
     do{
 	    x = getchar();
@@ -508,13 +512,13 @@ int play_again(){
 }
 
 void print_map(snake snake,int temp_mode){
-    int mode=1;    
-    if(temp_mode == 1 || temp_mode == 2){
+    int mode=temp_mode;
+   /* if(temp_mode == 1 || temp_mode == 2){
         mode = 1;
     }  
     else if(temp_mode == 3){
         mode = 2;
-    }
+    }*/
     int y=0;
     int x=0;
     switch (mode){
@@ -524,13 +528,30 @@ void print_map(snake snake,int temp_mode){
                 int x=0;
                 for (x=0; x<width; x++){                             
                     if (is_border(x,y)){
-                         buffer[x]='x';
+					    if(y==0 && x==0) {
+					    	buffer[x]=201;
+					    }
+                    	else if(y==height-1 && x==0){
+                    		buffer[x]=200;
+                    	}
+                    	else if(y==height-1 && x==width-1){
+                    		buffer[x]=188;
+                    	}
+                    	else if(y==0 && x==width-1){
+                    		buffer[x]=187;
+                    	}
+                    	else if(y==height-1 || y==0){
+                    		buffer[x]=205;
+                    	}
+                         else {
+                         	buffer[x]=186;
+                   		}
                     }
                     else if(is_snake(x,y, snake)){
                          if (x==snake.head.x && y ==snake.head.y){
-                             buffer[x]='o';                            
+                             buffer[x]='o';
                          }else{
-                             buffer[x]='x';                             
+                             buffer[x]='x';
                          }                          
                     }                   
                     else if(is_food(x,y,snake) ){
@@ -543,23 +564,67 @@ void print_map(snake snake,int temp_mode){
                 buffer[width]='\0';
                 printf("%s\n",buffer);
             }
-            break;        
-        case 2:    
+            break;
+            
+		case 2:
+            for ( y=0; y<height; y++){
+                char buffer[width+1];
+                int x=0;
+                for (x=0; x<width; x++){
+                    if (is_border(x,y)){
+					    if(y==0) {
+					    	buffer[x]=220;
+					    }
+                    	else if(y==height-1){
+                    		buffer[x]=223;
+                    	}
+                         else {
+                         	buffer[x]=219;
+                   		}
+                    }
+                    else if(is_snake(x,y, snake)){
+                         if (x==snake.head.x && y ==snake.head.y){
+                             buffer[x]='o';
+                         }else{
+                             buffer[x]='x';
+                         }
+                    }
+                    else if(is_food(x,y,snake) ){
+                    		 buffer[x]='@';
+                    }
+                    else {
+                        buffer[x]=' ';
+                    }
+                }
+                buffer[width]='\0';
+                printf("%s\n",buffer);
+            }
+            break;
+			       
+        case 3:
             for (y=0; y<height; y++){
                 char buffer[width+1]; 
                 for ( x=0; x<width; x++){           
                     if (is_border(x,y)){                        
-                        buffer[x]='x';
+                        if(y==0) {
+					    	buffer[x]=220;
+					    }
+                    	else if(y==height-1){
+                    		buffer[x]=223;
+                    	}
+                         else {
+                         	buffer[x]=219;
+                   		}
                     }
                     else if(is_snake(x,y, snake)){
                          if (x==snake.head.x && y ==snake.head.y){
-                             buffer[x]='o';                            
+                             buffer[x]='o';
                          }else{                             
                              buffer[x]='x';
                          }                          
                     }                   
                     else if(is_obstacle(x,y)){
-                        buffer[x]='x';
+                        buffer[x]=219;
                     }
                     else if(is_food(x,y,snake)){
                          buffer[x]='@';                        
@@ -576,7 +641,7 @@ void print_map(snake snake,int temp_mode){
 }
 
 int key_check(char key){
-    if((key != 'w') && (key != 'a') && (key != 's') && (key != 'd') && (key != 'W') && (key != 'A') && (key != 'S') && (key != 'D')){
+    if((key != 'w') && (key != 'a') && (key != 's') && (key != 'd') && (key != 'W') && (key != 'A') && (key != 'S') && (key != 'D')/* && (key!=72) && (key!=80) && (key!=75) && (key!=77)*/){
         return 1;
     } 
 }
@@ -594,7 +659,7 @@ int welcome_message(){
 	    printf("%*c",width/2 -3,' ');
 	    printf("Welcome!\n");
 
-	    printf("\n");
+	    /*printf("\n");
 	    printf("%*c",width/2,' ');
 	    printf("^");
 	    printf("\n");
@@ -603,18 +668,19 @@ int welcome_message(){
 	    printf("%*c",width/2 - 4,' ');
 	    printf("< A s D >\n");
 	    printf("%*c",width/2 - 2,' ');
-	    printf("  v  \n");
+	    printf("  v  \n");*/
+	  
 		    /*version 2 of intro*/
-		    /*printf("\n");
+		   printf("\n");
 		    printf("%*c",width/2,' ');
 		    printf("_");
 		    printf("\n");
 		    printf("%*c",width/2-2,' ');
 		    printf("_|W|_\n");
 		    printf("%*c",width/2 - 3,' ');
-	        printf("|A|s|D|\n");
+	        printf("|A s D|\n");
 	        printf("%*c",width/2 - 2,' ');
-	        printf("-----\n");*/
+	        printf("-----\n");
 	    printf("\n");
 	    printf("%*c",width/2 -8,' ');
 	    printf("Mode 1 | 2 | 3 :");
